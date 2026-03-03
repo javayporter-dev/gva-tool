@@ -58,6 +58,12 @@
   .generate-btn {
     margin-top: 15px;
   }
+
+  /* New Clear button style — neutral, minimal */
+  .clear-btn {
+    margin-top: 15px;
+    margin-left: 10px;
+  }
 </style>
 </head>
 
@@ -83,6 +89,7 @@
 <br>
 
 <button class="generate-btn" onclick="generate()">Generate</button>
+<button class="clear-btn" onclick="clearAll()">Clear All</button>
 
 <hr>
 
@@ -164,6 +171,22 @@ function generate() {
       createOutput(`Lot Parameter ${i + 1}`, lotParam);
     }
   }
+}
+
+function clearAll() {
+  // Clear text inputs
+  document.getElementById('dealerName').value = '';
+  document.getElementById('assetFolder').value = '';
+
+  // Clear lot rows
+  const container = document.getElementById('lotContainer');
+  container.innerHTML = '';
+
+  // Clear generated results
+  document.getElementById('results').innerHTML = '';
+
+  // Add one fresh lot row back
+  addLotRow();
 }
 
 // Add one lot row on initial load
