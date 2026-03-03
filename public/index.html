@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GVA Feed Setup Builder</title>
+
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    max-width: 900px;
+  }
+
+  h1 { margin-bottom: 10px; }
+
+  .row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  input {
+    padding: 6px;
+    flex: 1;
+  }
+
+  button {
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+
+  .output-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f4f4f4;
+    padding: 8px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+  }
+
+  .copy-btn {
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+
+  .add-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-top: 5px;
+  }
+
+  .generate-btn {
+    margin-top: 15px;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>GVA Feed Setup Builder</h1>
+
+<label>Dealer Name</label>
+<input type="text" id="dealerName">
+
+<br><br>
+
+<label>Asset Folder Name</label>
+<input type="text" id="assetFolder">
+
+<br><br>
+
+<h3>Lot Parameters</h3>
+<div id="lotContainer"></div>
+
+<button class="add-btn" onclick="addLotRow()">+ Add Lot</button>
+
+<br>
+
+<button class="generate-btn" onclick="generate()">Generate</button>
+
+<hr>
+
+<h2>Generated Values</h2>
+<div id="results"></div>
+
+<script>
+function addLotRow() {
+  const container = document.getElementById('lotContainer');
+  const row = document.createElement('div');
+  row.className = 'row';
+
+  row.innerHTML = `
+    <input type="text" placeholder="Lot ID" class="lotID">
+    <input type="text" placeholder="Dealer Phone Number" class="dealerPhone">
+  `;
+
+  container.appendChild(row);
+}
+
+function copyText(text, buttonElement) {
+  navigator.clipboard.writeText(text).then(() => {
+    const originalText = buttonElement.innerText;
+
+    buttonElement.innerText = "Copied!";
+    buttonElement.style.backgroundColor = "#17a2b8";
+
+    setTimeout(() => {
+      buttonElement.innerText = originalText;
+      buttonElement.style.backgroundColor = "#007bff";
+    }, 1200);
+  });
+}
+
+function generate() {
+  const dealerName = document.getElementById('dealerName').value.trim();
+  const assetFolder = document.getElementById('assetFolder').value.trim();
+
+  const transportName = dealerName
+    ? `${dealerName} GVA Local Transport`
+    : '';
+
+  const directory = assetFolder
+    ? `/irv/accounts/${assetFolder}/google_vehicle_ads/daily_export`
+    : '';
+
+  const fileUrl = assetFolder
+    ? `https://assets.interactcp.com/${assetFolder}/google_vehicle_ads/daily_export/gva.tsv`
+    : '';
+
+  const lotIDs = document.querySelectorAll('.lotID');
+  const dealerPhones = document.querySelectorAll('.dealerPhone');
+
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = '';
+
+  function createOutput(label, value) {
+    if (!value) return;
+
+    const div = document.createElement('div');
+    div.className = 'output-box';
+    div.innerHTML = `
+      <div><strong>${label}:</strong> ${value}</div>
+      <button class="copy-btn" onclick="copyText('${value}', this)">Copy</button>
+    `;
+    resultsDiv.appendChild(div);
+  }
+
+  createOutput('Transport Name', transportName);
+  createOutput('Directory', directory);
+  createOutput('File URL', fileUrl);
+
+  for (let i = 0; i < lotIDs.length; i++) {
+    const lotID = lotIDs[i].value.trim();
+    const dealerPhone = dealerPhones[i].value.trim();
+
+    if (lotID && dealerPhone) {
+      const lotParam = `${lotID}:${dealerPhone}`;
+      createOutput(`Lot Parameter ${i + 1}`, lotParam);
+    }
+  }
+}
+
+// Add one lot row on initial load
+addLotRow();
+</script>
+
+</body>
+</html>
