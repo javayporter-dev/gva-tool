@@ -59,7 +59,6 @@
     margin-top: 15px;
   }
 
-  /* New Clear button style — neutral, minimal */
   .clear-btn {
     margin-top: 15px;
     margin-left: 10px;
@@ -110,18 +109,44 @@ function addLotRow() {
   container.appendChild(row);
 }
 
+// Robust copy function for Clipboard API + fallback
 function copyText(text, buttonElement) {
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = buttonElement.innerText;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showCopiedFeedback(buttonElement);
+    }).catch(() => {
+      fallbackCopy(text, buttonElement);
+    });
+  } else {
+    fallbackCopy(text, buttonElement);
+  }
+}
 
-    buttonElement.innerText = "Copied!";
-    buttonElement.style.backgroundColor = "#17a2b8";
+// Fallback for cross-origin iframes (Confluence)
+function fallbackCopy(text, buttonElement) {
+  const tempInput = document.createElement('textarea');
+  tempInput.value = text;
+  tempInput.style.position = 'absolute';
+  tempInput.style.left = '-9999px';
+  document.body.appendChild(tempInput);
+  tempInput.select();
+  try {
+    document.execCommand('copy');
+    showCopiedFeedback(buttonElement);
+  } catch (err) {
+    alert('Copy failed. Please manually select the text and copy.');
+  }
+  document.body.removeChild(tempInput);
+}
 
-    setTimeout(() => {
-      buttonElement.innerText = originalText;
-      buttonElement.style.backgroundColor = "#007bff";
-    }, 1200);
-  });
+function showCopiedFeedback(buttonElement) {
+  const originalText = buttonElement.innerText;
+  buttonElement.innerText = "Copied!";
+  buttonElement.style.backgroundColor = "#17a2b8";
+  setTimeout(() => {
+    buttonElement.innerText = originalText;
+    buttonElement.style.backgroundColor = "#007bff";
+  }, 1200);
 }
 
 function generate() {
@@ -174,22 +199,18 @@ function generate() {
 }
 
 function clearAll() {
-  // Clear text inputs
   document.getElementById('dealerName').value = '';
   document.getElementById('assetFolder').value = '';
 
-  // Clear lot rows
   const container = document.getElementById('lotContainer');
   container.innerHTML = '';
 
-  // Clear generated results
   document.getElementById('results').innerHTML = '';
 
-  // Add one fresh lot row back
   addLotRow();
 }
 
-// Add one lot row on initial load
+// Initialize one lot row on load
 addLotRow();
 </script>
 
